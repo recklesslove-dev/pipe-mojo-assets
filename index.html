@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pipe Mojo" />
+  <meta name="theme-color" content="#120c08" />
+  <title>Pipe Mojo</title>
+  <style>
+    :root {
+      --burlap: #c4a574;
+      --burlap-dark: #8a6a42;
+      --denim: #3a5a8c;
+      --denim-dark: #2a4068;
+      --suspender: #c42b2b;
+      --hat: #161616;
+      --hat-band: #b42222;
+      --feather: #f4efe4;
+      --wrench: #c62828;
+      --wrench-metal: #9aa3ad;
+      --stitch: #1a1a1a;
+      --bg: #120c08;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 50% 40%, #2a1c12 0%, var(--bg) 70%);
+      overflow: hidden;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    /* Root character — all pieces live here so one tap target works */
+    #mojo {
+      position: relative;
+      width: min(72vw, 340px);
+      height: min(118vw, 560px);
+      transform-origin: 50% 88%;
+    }
+
+    .piece {
+      position: absolute;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      pointer-events: none;
+    }
+
+    /* ---------- BODY / OVERALLS ---------- */
+    #body {
+      left: 18%;
+      top: 38%;
+      width: 64%;
+      height: 48%;
+      border-radius: 28% 28% 22% 22%;
+      background:
+        linear-gradient(#0000 0 18%, var(--denim) 18% 100%),
+        var(--burlap);
+      box-shadow: inset 0 8px 0 rgba(255,255,255,.08), 0 10px 18px rgba(0,0,0,.35);
+    }
+    #body::before {
+      content: "";
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      top: 22%;
+      height: 8%;
+      background: var(--suspender);
+      border-radius: 3px;
+      box-shadow: 0 42px 0 var(--suspender);
+    }
+    #belt {
+      left: 20%;
+      top: 62%;
+      width: 60%;
+      height: 6%;
+      background: #6b4423;
+      border-radius: 4px;
+      z-index: 3;
+    }
+
+    /* ---------- LEGS / STUMP FEET ---------- */
+    #leg-l, #leg-r {
+      top: 78%;
+      width: 22%;
+      height: 16%;
+      background: var(--denim);
+      border-radius: 10px 10px 8px 8px;
+    }
+    #leg-l { left: 24%; }
+    #leg-r { left: 54%; }
+    #foot-l, #foot-r {
+      top: 90%;
+      width: 20%;
+      height: 8%;
+      background: var(--burlap);
+      border-radius: 40% 40% 45% 45%;
+    }
+    #foot-l { left: 25%; }
+    #foot-r { left: 55%; }
+
+    /* ---------- HEAD ---------- */
+    #head {
+      left: 24%;
+      top: 14%;
+      width: 52%;
+      height: 30%;
+      border-radius: 48% 48% 46% 46%;
+      background: var(--burlap);
+      box-shadow: inset -10px -8px 0 rgba(0,0,0,.12), 0 6px 10px rgba(0,0,0,.25);
+      z-index: 5;
+      transform-origin: 50% 80%;
+    }
+
+    /* ---------- HAT + FEATHER ---------- */
+    #hat {
+      left: 26%;
+      top: 2%;
+      width: 48%;
+      height: 18%;
+      z-index: 8;
+      transform-origin: 50% 100%;
+    }
+    #hat-crown {
+      position: absolute;
+      left: 22%;
+      top: 0;
+      width: 56%;
+      height: 78%;
+      background: var(--hat);
+      border-radius: 8px 8px 2px 2px;
+    }
+    #hat-brim {
+      position: absolute;
+      left: 0;
+      bottom: 8%;
+      width: 100%;
+      height: 22%;
+      background: var(--hat);
+      border-radius: 50%;
+    }
+    #hat-band {
+      position: absolute;
+      left: 22%;
+      top: 52%;
+      width: 56%;
+      height: 16%;
+      background: var(--hat-band);
+    }
+    #feather {
+      position: absolute;
+      right: 10%;
+      top: -18%;
+      width: 10%;
+      height: 70%;
+      background: var(--feather);
+      border-radius: 60% 40% 60% 40%;
+      transform: rotate(18deg);
+    }
+
+    /* ---------- EYES + BROWS (single static piece) ---------- */
+    #eyes {
+      left: 32%;
+      top: 22%;
+      width: 36%;
+      height: 10%;
+      z-index: 7;
+    }
+    .brow {
+      position: absolute;
+      top: 0;
+      width: 38%;
+      height: 22%;
+      background: var(--stitch);
+      border-radius: 3px;
+    }
+    .brow.l { left: 4%; transform: rotate(-18deg); }
+    .brow.r { right: 4%; transform: rotate(18deg); }
+    .eye {
+      position: absolute;
+      bottom: 0;
+      width: 28%;
+      height: 58%;
+      background: #111;
+      border-radius: 50%;
+    }
+    .eye.l { left: 12%; }
+    .eye.r { right: 12%; }
+    .eye::after {
+      content: "✕";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f3f3f3;
+      font-size: clamp(10px, 3.2vw, 16px);
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    /* Blink overlay — opacity flick, no swap */
+    #blink {
+      left: 32%;
+      top: 24%;
+      width: 36%;
+      height: 8%;
+      background: var(--burlap);
+      border-radius: 40%;
+      opacity: 0;
+      z-index: 8;
+    }
+
+    /* ---------- MOUTH STATES ---------- */
+    #mouth {
+      left: 40%;
+      top: 33%;
+      width: 20%;
+      height: 6%;
+      z-index: 7;
+    }
+    .mouth-state {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 120ms linear;
+    }
+    .mouth-state.on { opacity: 1; }
+    #mouth-idle {
+      border-bottom: 3px dashed var(--stitch);
+      border-radius: 0 0 60% 60%;
+      height: 70%;
+      top: 20%;
+    }
+    #mouth-alert {
+      height: 80%;
+      border: 3px solid var(--stitch);
+      border-radius: 50%;
+      background: #2a1a12;
+    }
+    #mouth-focused {
+      left: 10%;
+      width: 80%;
+      height: 18%;
+      top: 40%;
+      background: var(--stitch);
+      border-radius: 2px;
+    }
+    #mouth-smirk {
+      left: 20%;
+      width: 70%;
+      height: 50%;
+      top: 30%;
+      border-bottom: 3px solid var(--stitch);
+      border-right: 3px solid var(--stitch);
+      border-radius: 0 0 70% 20%;
+      transform: rotate(-12deg);
+    }
+
+    /* ---------- ARMS ---------- */
+    #arm-l {
+      left: 6%;
+      top: 44%;
+      width: 18%;
+      height: 28%;
+      background: var(--burlap);
+      border-radius: 40% 30% 40% 50%;
+      transform-origin: 80% 10%;
+      z-index: 2;
+    }
+    #arm-r {
+      right: 2%;
+      top: 40%;
+      width: 22%;
+      height: 34%;
+      background: var(--burlap);
+      border-radius: 30% 40% 50% 40%;
+      transform-origin: 20% 8%;
+      z-index: 6;
+    }
+    #wrench {
+      right: -8%;
+      top: 58%;
+      width: 22%;
+      height: 28%;
+      z-index: 7;
+      transform-origin: 50% 0%;
+    }
+    #wrench-handle {
+      position: absolute;
+      left: 38%;
+      top: 18%;
+      width: 24%;
+      height: 82%;
+      background: var(--wrench);
+      border-radius: 4px;
+    }
+    #wrench-jaw {
+      position: absolute;
+      left: 18%;
+      top: 0;
+      width: 64%;
+      height: 28%;
+      background: var(--wrench-metal);
+      border-radius: 4px 4px 2px 2px;
+      box-shadow: inset 0 -4px 0 #6d737a;
+    }
+
+    /* ---------- GANJA (optional cameo) ---------- */
+    #ganja {
+      left: 6%;
+      bottom: 10%;
+      width: 16%;
+      height: 10%;
+      opacity: 0;
+      transform: translateY(8px);
+      z-index: 9;
+    }
+    #ganja-shell {
+      position: absolute;
+      inset: 20% 10% 10% 10%;
+      background: #b45a28;
+      border-radius: 50% 50% 40% 40%;
+    }
+    #ganja-eye-l, #ganja-eye-r {
+      position: absolute;
+      top: 8%;
+      width: 22%;
+      height: 28%;
+      background: #fff;
+      border-radius: 50%;
+    }
+    #ganja-eye-l { left: 22%; }
+    #ganja-eye-r { right: 22%; }
+    #ganja-eye-l::after, #ganja-eye-r::after {
+      content: "";
+      position: absolute;
+      left: 30%;
+      top: 30%;
+      width: 40%;
+      height: 40%;
+      background: #111;
+      border-radius: 50%;
+    }
+    .ant {
+      position: absolute;
+      top: -18%;
+      width: 6%;
+      height: 40%;
+      background: #5a3a22;
+      border-radius: 4px;
+    }
+    .ant.l { left: 30%; transform: rotate(-20deg); }
+    .ant.r { right: 30%; transform: rotate(20deg); }
+
+    /* ---------- HUD ---------- */
+    .hint {
+      position: absolute;
+      top: max(14px, env(safe-area-inset-top));
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: rgba(255,236,210,.45);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    /* ---------- ANIMATIONS ---------- */
+    @keyframes breathe {
+      0%, 100% { transform: scale(1, 1) translateY(0); }
+      50% { transform: scale(1.015, 0.985) translateY(-3px); }
+    }
+    @keyframes headSway {
+      0%, 100% { transform: rotate(-2.2deg); }
+      50% { transform: rotate(2.2deg); }
+    }
+    @keyframes blinkOn {
+      0%, 100% { opacity: 0; }
+      40%, 60% { opacity: 1; }
+    }
+    @keyframes twirl {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes hatTip {
+      0%, 100% { transform: rotate(0deg); }
+      35% { transform: rotate(-18deg) translateY(-4px); }
+      70% { transform: rotate(6deg); }
+    }
+    @keyframes stretch {
+      0%, 100% { transform: scale(1,1); }
+      40% { transform: scale(1.04, 0.94) translateY(-10px); }
+    }
+    @keyframes lookL {
+      0%, 100% { transform: rotate(0deg) translateX(0); }
+      30%, 70% { transform: rotate(-8deg) translateX(-6px); }
+    }
+    @keyframes lookR {
+      0%, 100% { transform: rotate(0deg) translateX(0); }
+      30%, 70% { transform: rotate(8deg) translateX(6px); }
+    }
+    @keyframes shrug {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+    }
+    @keyframes flexArm {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      40%, 70% { transform: rotate(-50deg) translateY(-18px); }
+    }
+    @keyframes pointArm {
+      0%, 100% { transform: rotate(0deg); }
+      30%, 70% { transform: rotate(-25deg) translateX(8px); }
+    }
+    @keyframes ganjaIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      15%, 80% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(8px); }
+    }
+    @keyframes boredSag {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      40% { transform: rotate(6deg) translateY(8px); }
+    }
+
+    #mojo.idle-breathe { animation: breathe 3.6s ease-in-out infinite; }
+    #head.idle-sway { animation: headSway 6.4s ease-in-out infinite; }
+
+    #mojo.bit-stretch { animation: stretch 1.1s ease-in-out; }
+    #hat.bit-tip { animation: hatTip 1s ease-in-out; }
+    #wrench.bit-twirl { animation: twirl .7s ease-in-out; }
+    #head.bit-look-l { animation: lookL 1.1s ease-in-out; }
+    #head.bit-look-r { animation: lookR 1.1s ease-in-out; }
+    #arm-l.bit-shrug, #arm-r.bit-shrug { animation: shrug .8s ease-in-out; }
+    #arm-r.bit-flex { animation: flexArm 1.1s ease-in-out; }
+    #wrench.bit-flex { animation: flexArm 1.1s ease-in-out; }
+    #arm-r.bit-point { animation: pointArm .7s ease-in-out; }
+    #wrench.bit-point { animation: pointArm .7s ease-in-out; }
+    #ganja.show { animation: ganjaIn 3.2s ease-in-out; }
+    #head.bored { animation: boredSag 1.4s ease-in-out; }
+
+    #blink.blink { animation: blinkOn 160ms linear; }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="hint">tap mojo</div>
+
+    <div id="mojo" aria-label="Pipe Mojo">
+      <div id="arm-l" class="piece"></div>
+      <div id="body" class="piece"></div>
+      <div id="belt" class="piece"></div>
+      <div id="leg-l" class="piece"></div>
+      <div id="leg-r" class="piece"></div>
+      <div id="foot-l" class="piece"></div>
+      <div id="foot-r" class="piece"></div>
+
+      <div id="arm-r" class="piece"></div>
+      <div id="wrench" class="piece">
+        <div id="wrench-jaw"></div>
+        <div id="wrench-handle"></div>
+      </div>
+
+      <div id="head" class="piece">
+        <div id="hat" class="piece">
+          <div id="feather"></div>
+          <div id="hat-crown"></div>
+          <div id="hat-band"></div>
+          <div id="hat-brim"></div>
+        </div>
+      </div>
+
+      <div id="eyes" class="piece">
+        <div class="brow l"></div>
+        <div class="brow r"></div>
+        <div class="eye l"></div>
+        <div class="eye r"></div>
+      </div>
+      <div id="blink" class="piece"></div>
+
+      <div id="mouth" class="piece">
+        <div id="mouth-idle" class="mouth-state on"></div>
+        <div id="mouth-alert" class="mouth-state"></div>
+        <div id="mouth-focused" class="mouth-state"></div>
+        <div id="mouth-smirk" class="mouth-state"></div>
+      </div>
+
+      <div id="ganja" class="piece">
+        <div class="ant l"></div>
+        <div class="ant r"></div>
+        <div id="ganja-shell"></div>
+        <div id="ganja-eye-l"></div>
+        <div id="ganja-eye-r"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================================
+       PIPE MOJO COMPANION v1
+       Swap any piece later by setting ASSETS.pieceName = "url.png"
+       ============================================================ */
+
+    const ASSETS = {
+      body: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/body.png",
+      head: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/head.png",
+      hat: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/hat.png",
+      eyes: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/eyes.png",
+      mouthIdle: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/mouth.png",
+      mouthAlert: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/mouth.png",
+      mouthFocused: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/mouth.png",
+      mouthSmirk: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/mouth.png",
+      armRight: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/arm-right.png",
+      armLeft: "https://raw.githubusercontent.com/recklesslove-dev/pipe-mojo-assets/main/arm-left.png",
+      wrench: "", // baked into arm-right.png as one combined piece — kept empty on purpose
+      ganja: ""
+    };
+
+    const T = {
+      BREATHE_MS: 3600,
+      HEAD_SWAY_MS: 6400,
+      BLINK_MIN_MS: 4000,
+      BLINK_MAX_MS: 8000,
+      BLINK_DUR_MS: 160,
+      BIT_MIN_MS: 20000,
+      BIT_MAX_MS: 40000,
+      BIT_DUR_MS: 1100,
+      TAP_DUR_MS: 1000,
+      BORED_MS: 3 * 60 * 1000,
+      BORED_DUR_MS: 1600,
+      GANJA_CHANCE: 0.18
+    };
+
+    const BITS = [
+      "wrench-twirl",
+      "hat-tip",
+      "stretch",
+      "look-left",
+      "look-right",
+      "shrug",
+      "flex",
+      "point"
+    ];
+
+    const el = {
+      mojo: document.getElementById("mojo"),
+      head: document.getElementById("head"),
+      hat: document.getElementById("hat"),
+      blink: document.getElementById("blink"),
+      armL: document.getElementById("arm-l"),
+      armR: document.getElementById("arm-r"),
+      wrench: document.getElementById("wrench"),
+      ganja: document.getElementById("ganja")
+    };
+
+    const mouths = {
+      idle: document.getElementById("mouth-idle"),
+      alert: document.getElementById("mouth-alert"),
+      focused: document.getElementById("mouth-focused"),
+      smirk: document.getElementById("mouth-smirk")
+    };
+
+    /* ---------- state machine ---------- */
+    const state = {
+      busy: false,
+      lastBit: null,
+      lastTap: Date.now(),
+      blinkTimer: null,
+      bitTimer: null,
+      boredTimer: null
+    };
+
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function setMouth(name) {
+      Object.values(mouths).forEach((n) => n.classList.remove("on"));
+      (mouths[name] || mouths.idle).classList.add("on");
+    }
+
+    function clearBitClasses() {
+      const nodes = [el.mojo, el.head, el.hat, el.armL, el.armR, el.wrench, el.ganja];
+      nodes.forEach((n) => {
+        n.className = n.className
+          .split(" ")
+          .filter((c) => !c.startsWith("bit-") && c !== "bored" && c !== "show")
+          .join(" ");
+      });
+      el.mojo.classList.add("idle-breathe");
+      el.head.classList.add("idle-sway");
+    }
+
+    function playBlink() {
+      el.blink.classList.remove("blink");
+      void el.blink.offsetWidth;
+      el.blink.classList.add("blink");
+      state.blinkTimer = setTimeout(scheduleBlink, rand(T.BLINK_MIN_MS, T.BLINK_MAX_MS));
+    }
+
+    function scheduleBlink() {
+      state.blinkTimer = setTimeout(playBlink, rand(T.BLINK_MIN_MS, T.BLINK_MAX_MS));
+    }
+
+    function pickBit() {
+      let next = BITS[rand(0, BITS.length - 1)];
+      if (BITS.length > 1) {
+        while (next === state.lastBit) next = BITS[rand(0, BITS.length - 1)];
+      }
+      state.lastBit = next;
+      return next;
+    }
+
+    function playBit(name, mouth) {
+      if (state.busy) return;
+      state.busy = true;
+      clearBitClasses();
+      setMouth(mouth || "focused");
+
+      switch (name) {
+        case "wrench-twirl":
+          el.wrench.classList.add("bit-twirl");
+          break;
+        case "hat-tip":
+          el.hat.classList.add("bit-tip");
+          break;
+        case "stretch":
+          el.mojo.classList.add("bit-stretch");
+          break;
+        case "look-left":
+          el.head.classList.add("bit-look-l");
+          break;
+        case "look-right":
+          el.head.classList.add("bit-look-r");
+          break;
+        case "shrug":
+          el.armL.classList.add("bit-shrug");
+          el.armR.classList.add("bit-shrug");
+          break;
+        case "flex":
+          el.armR.classList.add("bit-flex");
+          el.wrench.classList.add("bit-flex");
+          setMouth("smirk");
+          break;
+        case "point":
+          el.armR.classList.add("bit-point");
+          el.wrench.classList.add("bit-point");
+          setMouth("alert");
+          break;
+      }
+
+      if (Math.random() < T.GANJA_CHANCE) {
+        el.ganja.classList.add("show");
+      }
+
+      setTimeout(() => {
+        clearBitClasses();
+        setMouth("idle");
+        state.busy = false;
+      }, T.BIT_DUR_MS);
+    }
+
+    function scheduleBit() {
+      state.bitTimer = setTimeout(() => {
+        playBit(pickBit());
+        scheduleBit();
+      }, rand(T.BIT_MIN_MS, T.BIT_MAX_MS));
+    }
+
+    function playTap() {
+      state.lastTap = Date.now();
+      resetBoredClock();
+      if (state.busy) return;
+      state.busy = true;
+      clearBitClasses();
+      el.armR.classList.add("bit-point");
+      el.wrench.classList.add("bit-point");
+      setMouth(Math.random() < 0.5 ? "alert" : "smirk");
+
+      setTimeout(() => {
+        clearBitClasses();
+        setMouth("idle");
+        state.busy = false;
+      }, T.TAP_DUR_MS);
+    }
+
+    function playBored() {
+      if (state.busy) {
+        resetBoredClock();
+        return;
+      }
+      state.busy = true;
+      clearBitClasses();
+      el.head.classList.add("bored");
+      el.mojo.classList.add("bit-stretch");
+      setMouth("smirk");
+
+      setTimeout(() => {
+        clearBitClasses();
+        setMouth("idle");
+        state.busy = false;
+        resetBoredClock();
+      }, T.BORED_DUR_MS);
+    }
+
+    function resetBoredClock() {
+      clearTimeout(state.boredTimer);
+      state.boredTimer = setTimeout(playBored, T.BORED_MS);
+    }
+
+    function applyAssets() {
+      const map = [
+        ["body", ASSETS.body],
+        ["head", ASSETS.head],
+        ["hat", ASSETS.hat],
+        ["eyes", ASSETS.eyes],
+        ["arm-r", ASSETS.armRight],
+        ["arm-l", ASSETS.armLeft],
+        ["wrench", ASSETS.wrench],
+        ["ganja", ASSETS.ganja]
+      ];
+      map.forEach(([id, url]) => {
+        if (!url) return;
+        const node = document.getElementById(id);
+        node.style.backgroundImage = `url("${url}")`;
+        node.style.backgroundColor = "transparent";
+      });
+      // Wrench is baked into the arm-right art as one piece — hide the
+      // separate placeholder box so it doesn't double up once real art loads.
+      if (ASSETS.armRight) {
+        document.getElementById("wrench").style.display = "none";
+      }
+      if (ASSETS.mouthIdle) mouths.idle.style.backgroundImage = `url("${ASSETS.mouthIdle}")`;
+      if (ASSETS.mouthAlert) mouths.alert.style.backgroundImage = `url("${ASSETS.mouthAlert}")`;
+      if (ASSETS.mouthFocused) mouths.focused.style.backgroundImage = `url("${ASSETS.mouthFocused}")`;
+      if (ASSETS.mouthSmirk) mouths.smirk.style.backgroundImage = `url("${ASSETS.mouthSmirk}")`;
+    }
+
+    /* ---------- boot ---------- */
+    applyAssets();
+    el.mojo.classList.add("idle-breathe");
+    el.head.classList.add("idle-sway");
+    setMouth("idle");
+    scheduleBlink();
+    scheduleBit();
+    resetBoredClock();
+
+    el.mojo.addEventListener("click", playTap);
+    el.mojo.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      playTap();
+    }, { passive: false });
+  </script>
+</body>
+</html>
